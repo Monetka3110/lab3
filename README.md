@@ -137,7 +137,7 @@ flowchart TB
         MW["Аутентификация и проверка ролей<br/>(middleware)"]
         C["Контроллеры<br/>Auth · Workplace · Booking · Admin"]
         S["Сервисы бизнес-логики<br/>WorkplaceService · BookingService"]
-        AV["⭐ Модуль контроля доступности<br/>AvailabilityService<br/>(проверка занятости «на лету»)"]
+        AV["Модуль контроля доступности<br/>AvailabilityService<br/>(проверка занятости «на лету»)"]
         REP["Репозитории<br/>User · Booking · Workplace · Zone · Equipment"]
         M["Модели<br/>User · Booking · Workplace · OfficeZone · Equipment"]
     end
