@@ -1,0 +1,36 @@
+sequenceDiagram
+    autonumber
+    actor U as Сотрудник
+    participant F as Frontend
+    participant C as BookingController
+    participant S as BookingService
+    participant AV as AvailabilityService
+    participant R as BookingRepository
+    participant D as База данных (MySQL)
+
+    U->>F: Выбирает место, дату и время, нажимает «Забронировать»
+    F->>C: POST /api/bookings {workplace_id, start_at, end_at} + токен
+    C->>C: Проверка авторизации и валидация данных
+    C->>S: createBooking(userId, workplaceId, start, end)
+    S->>D: BEGIN TRANSACTION
+    S->>AV: isAvailable(workplaceId, start, end)
+    AV->>R: findOverlapping(workplaceId, start, end)
+    R->>D: SELECT … WHERE workplace_id = ? AND start_at < :end AND end_at > :start FOR UPDATE
+    D-->>R: Список пересекающихся бронирований
+    R-->>AV: Результат
+    alt Место свободно
+        AV-->>S: true
+        S->>R: save(booking)
+        R->>D: INSERT INTO bookings …
+        D-->>R: id новой брони
+        S->>D: COMMIT
+        S-->>C: Booking (status = active)
+        C-->>F: 201 Created + данные брони
+        F-->>U: «Место забронировано»
+    else Место уже занято
+        AV-->>S: false
+        S->>D: ROLLBACK
+        S-->>C: Ошибка конфликта
+        C-->>F: 409 Conflict + свободные альтернативы
+        F-->>U: «Место занято, выберите другое время или место»
+    end
