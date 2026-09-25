@@ -1,0 +1,37 @@
+flowchart TB
+    U(["👤 Сотрудник"])
+    A(["👤 Офис-менеджер"])
+
+    subgraph FE["Frontend — клиентская часть (HTML / CSS / JS)"]
+        UI["Веб-интерфейс<br/>карта офиса, бронирования, админ-панель"]
+    end
+
+    subgraph BE["Backend — серверная часть (PHP, REST API)"]
+        R["Маршрутизатор (routes)"]
+        MW["Аутентификация и проверка ролей<br/>(middleware)"]
+        C["Контроллеры<br/>Auth · Workplace · Booking · Admin"]
+        S["Сервисы бизнес-логики<br/>WorkplaceService · BookingService"]
+        AV["⭐ Модуль контроля доступности<br/>AvailabilityService<br/>(проверка занятости «на лету»)"]
+        REP["Репозитории<br/>User · Booking · Workplace · Zone · Equipment"]
+        M["Модели<br/>User · Booking · Workplace · OfficeZone · Equipment"]
+    end
+
+    subgraph DB["Database — база данных (MySQL)"]
+        T[("employees · bookings · workplaces<br/>office_zones · equipment")]
+    end
+
+    U -- "работа в браузере" --> UI
+    A -- "работа в браузере" --> UI
+    UI -- "HTTP-запросы / JSON (REST API)" --> R
+    R --> MW --> C
+    C --> S
+    S -- "проверить интервал" --> AV
+    AV -- "поиск пересечений" --> REP
+    S --> REP
+    REP -. "использует" .-> M
+    REP -- "SQL (PDO), транзакции" --> T
+    T -- "результат запроса" --> REP
+    C -- "JSON-ответ" --> UI
+
+    classDef special fill:#ffe6cc,stroke:#d79b00,stroke-width:2px,color:#000;
+    class AV special;
